@@ -7,8 +7,9 @@ concurrency:
 
 on:
   schedule:
-    - cron: "*/2 * * * *"  # executes this pipeline every x minutes
+    - cron: "*/6 * * * *"
   workflow_dispatch:
+
 
 jobs:
   notebook2rest-setup:
