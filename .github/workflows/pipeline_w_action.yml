@@ -38,7 +38,7 @@ jobs:
       #   uses: actions/checkout@v4
       - name: Retrieve the notebook repository
         run: |
-          git clone ${{ env.NOTEBOOK_REPOSITORY }}
+          git clone ${{ env.NOTEBOOK_REPOSITORY_URL }}
           
       - name: Set up Python
         uses: actions/setup-python@v5
