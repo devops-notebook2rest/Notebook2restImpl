@@ -1,13 +1,14 @@
 name: Build_and_redeploy_with_N2R
 
+# Prevents multiple concurrent deployments
+concurrency:
+  group: notebook2rest-pipeline
+  cancel-in-progress: true
+
 on:
-  push:
-    branches: ["main"]
-  pull_request:
-    branches: ["main"]
-  workflow_dispatch:
   schedule:
-    - cron: "*/3 * * * *"  # executes this pipeline every x minutes
+    - cron: "*/2 * * * *"  # executes this pipeline every x minutes
+  workflow_dispatch:
 
 jobs:
   notebook2rest-setup:
