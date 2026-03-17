@@ -38,11 +38,16 @@ jobs:
           LATEST=$(git ls-remote ${{ env.NOTEBOOK_REPOSITORY_URL }} HEAD | cut -f1)
           echo "latest_commit=$LATEST" >> $GITHUB_OUTPUT
 
+      - name: Prepare last commit file
+        run: |
+          mkdir -p .cache
+          echo ${{ steps.check_repo.outputs.latest_commit }} > .cache/last_commit
+
       - name: Cache last commit
         id: cache_commit
         uses: actions/cache@v4
         with:
-          path: .last_commit
+          path: .cache/last_commit
           key: notebook-repo-${{ steps.check_repo.outputs.latest_commit }}
 
       - name: Stop if no changes
