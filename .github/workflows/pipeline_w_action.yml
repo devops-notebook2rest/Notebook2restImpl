@@ -53,7 +53,7 @@ jobs:
       - name: Run notebook2rest
         run: |
           cd notebook2rest
-          python3 src/main.py ../${{ NOTEBOOK_REPOSITORY_NAME }}
+          python3 src/main.py ../${{ env.NOTEBOOK_REPOSITORY_NAME }}
 
       # AWS setup
       - name: Configure AWS credentials
