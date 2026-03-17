@@ -7,7 +7,7 @@ concurrency:
 
 on:
   schedule:
-    - cron: "*/5 * * * *"
+    - cron: "*/7 * * * *"
       branches: ["main"]
   workflow_dispatch:
 
