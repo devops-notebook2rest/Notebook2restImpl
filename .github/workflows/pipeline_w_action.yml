@@ -28,6 +28,27 @@ jobs:
       contents: read
 
     steps:
+
+      # Check if the notebook repo has changed. If not, stop the pipeline.
+      - name: Check latest commit hash
+        id: check_repo
+        run: |
+          LATEST=$(git ls-remote ${{ env.NOTEBOOK_REPOSITORY_URL }} HEAD | cut -f1)
+          echo "latest_commit=$LATEST" >> $GITHUB_OUTPUT
+
+      - name: Cache last commit
+        id: cache_commit
+        uses: actions/cache@v4
+        with:
+          path: .last_commit
+          key: notebook-repo-${{ steps.check_repo.outputs.latest_commit }}
+
+      - name: Stop if no changes
+        if: steps.cache_commit.outputs.cache-hit == 'true'
+        run: |
+          echo "No changes in notebook repo. Skipping build."
+          exit 0
+
       # - name: Checkout notebook repository
       #   uses: actions/checkout@v4
       - name: Retrieve the notebook repository
