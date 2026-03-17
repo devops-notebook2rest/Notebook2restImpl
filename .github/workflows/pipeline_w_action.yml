@@ -2,18 +2,12 @@ name: Build_and_redeploy_with_N2R
 
 on:
   push:
-    branches: [ "main" ]
-    # paths:
-    #   - '**/*.ipynb'
-    #   - '**/*.naavrewf'
-    #   - "n2res/**"
+    branches: []
   pull_request:
-    branches: [ "main" ]
-      # paths:
-      # - '**/*.ipynb'
-      # - '**/*.naavrewf'
-      # - "n2res/**"
+    branches: []
   workflow_dispatch:
+  schedule:
+    - cron: "*/3 * * * *"  # executes this pipeline every x minutes
 
 jobs:
   notebook2rest-setup:
