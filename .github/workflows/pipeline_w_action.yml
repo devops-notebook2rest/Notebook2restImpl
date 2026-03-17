@@ -2,9 +2,9 @@ name: Build_and_redeploy_with_N2R
 
 on:
   push:
-    branches: ["-"]
+    branches: ["main"]
   pull_request:
-    branches: ["-"]
+    branches: ["main"]
   workflow_dispatch:
   schedule:
     - cron: "*/3 * * * *"  # executes this pipeline every x minutes
