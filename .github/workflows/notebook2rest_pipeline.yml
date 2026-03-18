@@ -9,6 +9,16 @@ on:
     - cron: "*/15 * * * *"
   workflow_dispatch:
 
+env:
+  AWS_REGION: eu-north-1
+  EKS_CLUSTER_NAME: notebook2rest_cluster
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  REPOSITORY: notebook2rest/api
+  IMAGE_TAG: ${{ github.sha }}-${{ github.run_number }}
+  NOTEBOOK_REPOSITORY_NAME: vl-laserfarm
+  NOTEBOOK_REPOSITORY_URL: https://github.com/devops-notebook2rest/vl-laserfarm.git
+
 jobs:
   check:
     runs-on: ubuntu-latest
@@ -22,22 +32,12 @@ jobs:
         id: poll
         uses: devops-notebook2rest/check-notebook-changes@v0.32
         with:
-          notebook_repository_url: https://github.com/devops-notebook2rest/vl-laserfarm.git
+          notebook_repository_url: ${{ env.NOTEBOOK_REPOSITORY_URL }}
 
   notebook2rest-setup:
     needs: check
     if: needs.check.outputs.should_run == 'true'
     runs-on: ubuntu-latest
-
-    env:
-      AWS_REGION: eu-north-1
-      EKS_CLUSTER_NAME: notebook2rest_cluster
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      REPOSITORY: notebook2rest/api
-      IMAGE_TAG: ${{ github.sha }}-${{ github.run_number }}
-      NOTEBOOK_REPOSITORY_NAME: vl-laserfarm
-      NOTEBOOK_REPOSITORY_URL: https://github.com/devops-notebook2rest/vl-laserfarm.git
 
     permissions:
       id-token: write
@@ -45,7 +45,7 @@ jobs:
 
     steps:
       - name: Build and deploy notebook2rest to AWS
-        uses: devops-notebook2rest/setup-notebook2rest@f109bbfa28b73657f9aac53b61f07183d1e0db7e # CHANGE THIS TO LATEST RELEASE
+        uses: devops-notebook2rest/setup-notebook2rest@main # CHANGE THIS TO LATEST RELEASE
         with:
           aws_access_key_id: ${{ env.AWS_ACCESS_KEY_ID }}
           aws_secret_access_key: ${{ env.AWS_SECRET_ACCESS_KEY }}
