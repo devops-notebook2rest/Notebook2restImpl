@@ -1,12 +1,12 @@
-name: Build_and_redeploy_with_N2R
+name: Build_and_redeploy_with_N2R_OLD
 
 concurrency:
   group: notebook2rest-pipeline
   cancel-in-progress: true
 
 on:
-  schedule:
-    - cron: "*/15 * * * *"
+  # schedule:
+  #   - cron: "*/15 * * * *"
   workflow_dispatch:
 
 jobs:
