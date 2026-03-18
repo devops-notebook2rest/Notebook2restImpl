@@ -44,48 +44,13 @@ jobs:
       contents: read
 
     steps:
-      - name: Retrieve the notebook repository
-        run: |
-          git clone ${{ env.NOTEBOOK_REPOSITORY_URL }}
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Build and deploy notebook2rest to AWS
+        uses: devops-notebook2rest/setup-notebook2rest@v1
         with:
-          python-version: "3.11"
-
-      - name: Install notebook2rest
-        run: |
-          git clone https://github.com/devops-notebook2rest/notebook2rest.git
-
-      - name: Run notebook2rest
-        run: |
-          cd notebook2rest
-          python3 src/main.py ../${{ env.NOTEBOOK_REPOSITORY_NAME }}
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
-
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
-
-      - name: Build, tag, and push docker image
-        env:
-          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        run: |
-          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG notebook2rest/build
-          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
-
-      - name: Configure kubeconfig
-        run: aws eks update-kubeconfig --region $AWS_REGION --name $EKS_CLUSTER_NAME
-
-      - name: Deploy Helm chart
-        run: |
-          helm upgrade --install my-api notebook2rest/templates/helm \
-            --namespace default \
-            --set image.repository=259361438396.dkr.ecr.eu-north-1.amazonaws.com/notebook2rest/api \
-            --set image.tag=$IMAGE_TAG
+          aws_access_key_id: ${{ env.AWS_ACCESS_KEY_ID }}
+          aws_secret_access_key: ${{ env.AWS_SECRET_ACCESS_KEY }}
+          aws_region: ${{ env.AWS_REGION }}
+          eks_cluster_name: ${{ env.EKS_CLUSTER_NAME }}
+          ecr_repository: ${{ env.REPOSITORY }}
+          notebook_repository_name: ${{ env.NOTEBOOK_REPOSITORY_NAME }}
+          notebook_repository_url: ${{ env.NOTEBOOK_REPOSITORY_URL }}
