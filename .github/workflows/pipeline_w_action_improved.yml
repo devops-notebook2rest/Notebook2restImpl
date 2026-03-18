@@ -45,7 +45,7 @@ jobs:
 
     steps:
       - name: Build and deploy notebook2rest to AWS
-        uses: devops-notebook2rest/setup-notebook2rest@v1
+        uses: devops-notebook2rest/setup-notebook2rest@f109bbfa28b73657f9aac53b61f07183d1e0db7e # CHANGE THIS TO LATEST RELEASE
         with:
           aws_access_key_id: ${{ env.AWS_ACCESS_KEY_ID }}
           aws_secret_access_key: ${{ env.AWS_SECRET_ACCESS_KEY }}
