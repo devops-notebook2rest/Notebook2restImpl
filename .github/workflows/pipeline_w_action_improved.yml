@@ -12,32 +12,17 @@ on:
 jobs:
   check:
     runs-on: ubuntu-latest
+
     outputs:
       should_run: ${{ steps.poll.outputs.should_run }}
       latest_commit: ${{ steps.poll.outputs.latest_commit }}
+
     steps:
       - name: Poll Notebook Repository
         id: poll
         uses: devops-notebook2rest/check-notebook-changes@v0.32
         with:
           notebook_repository_url: https://github.com/devops-notebook2rest/vl-laserfarm.git
-      - name: Debug
-        run: |
-          echo "should_run=${{ steps.poll.outputs.should_run }}"
-          echo "latest_commit=${{ steps.poll.outputs.latest_commit }}"
-
-# jobs:
-#   check:
-#     runs-on: ubuntu-latest
-#     outputs:
-#       should_run: ${{ steps.poll.outputs.should_run }}
-#       latest_commit: ${{ steps.poll.outputs.latest_commit }}
-
-#     steps:
-#       - name: Poll Notebook Repository
-#         uses: devops-notebook2rest/check-notebook-changes@v0.32
-#         with:
-#           notebook_repository_url: https://github.com/devops-notebook2rest/vl-laserfarm.git
 
   notebook2rest-setup:
     needs: check
