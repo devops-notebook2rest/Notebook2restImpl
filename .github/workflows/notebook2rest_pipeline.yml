@@ -20,7 +20,7 @@ env:
   NOTEBOOK_REPOSITORY_URL: https://github.com/devops-notebook2rest/vl-laserfarm.git
 
 jobs:
-  check:
+  Check for notebook changes:
     runs-on: ubuntu-latest
 
     outputs:
