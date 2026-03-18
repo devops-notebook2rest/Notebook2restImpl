@@ -14,7 +14,8 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       should_run: ${{ steps.poll.outputs.should_run }}
-
+      latest_commit: ${{ steps.poll.outputs.latest_commit }}
+      
     steps:
       - name: Poll Notebook Repository
         uses: devops-notebook2rest/check-notebook-changes@Caching
