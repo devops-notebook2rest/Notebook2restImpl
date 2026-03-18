@@ -1,52 +1,16 @@
 name: Build_and_redeploy_with_N2R
 
+# Prevents multiple concurrent deployments
 concurrency:
   group: notebook2rest-pipeline
   cancel-in-progress: true
 
 on:
-  schedule:
-    - cron: "*/15 * * * *"
   workflow_dispatch:
 
+
 jobs:
-  check:
-    runs-on: ubuntu-latest
-
-    outputs:
-      should_run: ${{ steps.cache_commit.outputs.cache-hit != 'true' }}
-
-    steps:
-      - name: Check latest commit hash
-        id: check_repo
-        run: |
-          LATEST=$(git ls-remote https://github.com/devops-notebook2rest/vl-laserfarm.git HEAD | cut -f1)
-          echo "latest_commit=$LATEST" >> $GITHUB_OUTPUT
-
-      - name: Prepare cache file
-        run: |
-          mkdir -p .cache
-          echo ${{ steps.check_repo.outputs.latest_commit }} > .cache/last_commit
-
-      - name: Cache last commit
-        id: cache_commit
-        uses: actions/cache@v4
-        with:
-          path: .cache/last_commit
-          key: notebook-repo-${{ steps.check_repo.outputs.latest_commit }}
-
-      - name: Debug decision
-        run: |
-          echo "Cache hit: ${{ steps.cache_commit.outputs.cache-hit }}"
-          if [ "${{ steps.cache_commit.outputs.cache-hit }}" = "true" ]; then
-            echo "No changes detected"
-          else
-            echo "Changes detected"
-          fi
-
   notebook2rest-setup:
-    needs: check
-    if: needs.check.outputs.should_run == 'true'
     runs-on: ubuntu-latest
 
     env:
@@ -64,15 +28,44 @@ jobs:
       contents: read
 
     steps:
+
+      # Check if the notebook repo has changed. If not, stop the pipeline.
+      - name: Check latest commit hash
+        id: check_repo
+        run: |
+          LATEST=$(git ls-remote ${{ env.NOTEBOOK_REPOSITORY_URL }} HEAD | cut -f1)
+          echo "latest_commit=$LATEST" >> $GITHUB_OUTPUT
+
+      - name: Prepare last commit file
+        run: |
+          mkdir -p .cache
+          echo ${{ steps.check_repo.outputs.latest_commit }} > .cache/last_commit
+
+      - name: Cache last commit
+        id: cache_commit
+        uses: actions/cache@v4
+        with:
+          path: .cache/last_commit
+          key: notebook-repo-${{ steps.check_repo.outputs.latest_commit }}
+
+      - name: Stop if no changes
+        if: steps.cache_commit.outputs.cache-hit != 'true'
+        run: |
+          echo "Changes found in notebook repo. Skipping build."
+          exit 0
+
+      # - name: Checkout notebook repository
+      #   uses: actions/checkout@v4
       - name: Retrieve the notebook repository
         run: |
           git clone ${{ env.NOTEBOOK_REPOSITORY_URL }}
-
+          
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
+      # Run Notebook2REST
       - name: Install notebook2rest
         run: |
           git clone https://github.com/devops-notebook2rest/notebook2rest.git
@@ -82,6 +75,7 @@ jobs:
           cd notebook2rest
           python3 src/main.py ../${{ env.NOTEBOOK_REPOSITORY_NAME }}
 
+      # AWS setup
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -89,10 +83,12 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
+      # ECR login
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
+      # Build & push the image
       - name: Build, tag, and push docker image
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
@@ -100,12 +96,12 @@ jobs:
           docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG notebook2rest/build
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
 
+      # Points it to the AWS cluster
       - name: Configure kubeconfig
         run: aws eks update-kubeconfig --region $AWS_REGION --name $EKS_CLUSTER_NAME
 
+      # Redeploys helm chart
       - name: Deploy Helm chart
         run: |
-          helm upgrade --install my-api notebook2rest/templates/helm \
-            --namespace default \
-            --set image.repository=259361438396.dkr.ecr.eu-north-1.amazonaws.com/notebook2rest/api \
-            --set image.tag=$IMAGE_TAG
+          helm upgrade --install my-api notebook2rest/templates/helm --namespace default --set image.repository=259361438396.dkr.ecr.eu-north-1.amazonaws.com/notebook2rest/api --set image.tag=$IMAGE_TAG
+         # helm upgrade --install my-api ./n2res --namespace default --set image.repository=$REGISTRY/$REPOSITORY --set image.tag=$IMAGE_TAG
