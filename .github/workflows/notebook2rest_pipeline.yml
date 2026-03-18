@@ -34,7 +34,7 @@ jobs:
         with:
           notebook_repository_url: ${{ env.NOTEBOOK_REPOSITORY_URL }}
 
-  Build_and_deploy_Notebook2REST_API:
+  Build_and_deploy_N2R_API:
     needs: Poll_notebook_changes
     if: needs.check.outputs.should_run == 'true'
     runs-on: ubuntu-latest
