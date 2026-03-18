@@ -18,7 +18,7 @@ jobs:
 
     steps:
       - name: Poll Notebook Repository
-        uses: devops-notebook2rest/check-notebook-changes@v0.31
+        uses: devops-notebook2rest/check-notebook-changes@v0.32
         with:
           notebook_repository_url: https://github.com/devops-notebook2rest/vl-laserfarm.git
 
