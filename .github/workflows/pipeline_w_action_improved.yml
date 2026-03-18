@@ -15,10 +15,10 @@ jobs:
     outputs:
       should_run: ${{ steps.poll.outputs.should_run }}
       latest_commit: ${{ steps.poll.outputs.latest_commit }}
-      
+
     steps:
       - name: Poll Notebook Repository
-        uses: devops-notebook2rest/check-notebook-changes@Caching
+        uses: devops-notebook2rest/check-notebook-changes@v0.3
         with:
           notebook_repository_url: https://github.com/devops-notebook2rest/vl-laserfarm.git
 
